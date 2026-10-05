@@ -12,4 +12,5 @@ if [[ "$(xcode-select -p)" == /Library/Developer/CommandLineTools ]]; then
            -Xlinker -rpath -Xlinker "$clt/Frameworks"
            -Xlinker -rpath -Xlinker "$clt/usr/lib")
 fi
-swift test "${flags[@]}" "$@"
+# ${flags[@]+...}: macOS's Bash 3.2 treats an empty array as unbound under `set -u`.
+swift test ${flags[@]+"${flags[@]}"} "$@"
