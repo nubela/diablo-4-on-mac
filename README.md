@@ -6,38 +6,83 @@ Apple Silicon Macs. It puts together public parts: Wine, Apple's D3DMetal, and D
 You still need your own Diablo IV license and Battle.net account. D4Mac does not include
 any game files, Blizzard software or Apple software.
 
-## What it does
+## Download
 
-The app shows a setup checklist. Each step runs and turns green:
+**[⬇ Download D4Mac.dmg](https://github.com/nubela/diablo-4-on-mac/releases/latest/download/D4Mac.dmg)**
+(or [D4Mac.zip](https://github.com/nubela/diablo-4-on-mac/releases/latest/download/D4Mac.zip))
 
-1. **Check this Mac**: Apple Silicon, macOS 14+, Rosetta 2, 20 GB free
-2. **Download Wine**: open-source Wine 10 engine with MSync and D3DMetal support
-3. **Import D3DMetal**: Apple's DirectX 12 → Metal layer (see below)
-4. **Download DXMT**: open-source DirectX 11 → Metal, for the Battle.net window
-5. **Create Windows environment**
-6. **Import Diablo IV**: clones an existing install (no extra disk space), or skips
-7. **Install Battle.net**: Blizzard's official installer
+GitHub Actions builds both from this repository's source.
+Every commit's build is also on the [Actions page](https://github.com/nubela/diablo-4-on-mac/actions/workflows/build.yml).
 
-Then press **Play**.
+**Tested:** MacBook Pro M4 Pro, macOS 26.5.2, Diablo IV 3.2.2 (Battle.net). Gets in game to character select.
 
-## Getting D3DMetal
+**Needs:** an Apple Silicon Mac (M1 or later), macOS 14 or later, 100–160 GB free for the game (160 GB with high-resolution textures).
 
-D3DMetal is Apple's code and cannot be shipped with D4Mac. D4Mac finds it in one of these places:
+## Play Diablo IV on your Mac
 
-* **Apple's Game Porting Toolkit.** Sign in at
-  <https://developer.apple.com/download/all/?q=game%20porting%20toolkit> with a free Apple ID,
-  download *Game Porting Toolkit 3* (.dmg) to `~/Downloads`. D4Mac finds it.
-* **A D3DMetal folder already on your Mac** (same layout as the toolkit's `redist/lib`:
-  `external/libd3dshared.dylib` + `wine/`). Choose it with "Choose .dmg or folder…".
+### 1. Install the app
 
-## Build
+Open `D4Mac.dmg` and drag **D4Mac** into **Applications**.
+
+D4Mac is not signed with a paid Apple developer certificate, so the first time you open it
+macOS says it "cannot be opened". To allow it:
+open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to D4Mac.
+(Or run `xattr -dr com.apple.quarantine /Applications/D4Mac.app` in Terminal.)
+
+### 2. Run setup
+
+Open D4Mac and click **Run setup**. Each step downloads or prepares one part and turns green.
+
+<img src="docs/screenshots/1-setup.png" width="700" alt="D4Mac setup checklist">
+
+Step 3, **Import D3DMetal**, needs Apple's DirectX 12 → Metal layer. D4Mac cannot ship it,
+so get it once from Apple:
+
+1. Click **Open Apple download page** and sign in with a free Apple ID.
+2. Download **Game Porting Toolkit 3** (`.dmg`) into your Downloads folder.
+3. D4Mac finds it by itself. Or click **Choose .dmg or folder…** and pick it.
+
+### 3. Sign in to Battle.net
+
+The last setup step installs Blizzard's official Battle.net launcher. Click through the
+installer, then sign in with your own Blizzard account.
+
+<img src="docs/screenshots/3-battlenet-login.png" width="300" alt="Battle.net sign-in inside D4Mac">
+
+If Battle.net offers to install Diablo IV, click **Install** (100–160 GB), or
+**Locate the game** if you already have the files in
+`C:\Program Files (x86)\Diablo IV`.
+
+### 4. Press Play
+
+When setup is done, D4Mac shows the Play screen. Click **Play**: D4Mac opens Battle.net
+and starts Diablo IV.
+
+<img src="docs/screenshots/4-play.png" width="700" alt="D4Mac Play screen">
+
+<img src="docs/screenshots/5-battlenet-play.png" width="250" alt="Diablo IV ready to play in Battle.net">
+
+Tick **Show FPS (Metal HUD)** to see the frame rate in the game.
+Click **Stop** to close Battle.net and the game.
+
+## Already have Diablo IV from GameToMac?
+
+D4Mac finds an existing Battle.net install from GameToMac and clones it with APFS. This
+takes about a second and uses no extra disk space, and GameToMac's own files stay unchanged.
+It also re-uses the D3DMetal copy GameToMac downloaded, so you can skip the Apple download.
+
+## Build from source
 
 Needs Apple's Command Line Tools (`xcode-select --install`). Xcode is not required.
 
 ```sh
 scripts/build-app.sh      # → dist/D4Mac.app
+scripts/make-dmg.sh       # → dist/D4Mac.dmg and dist/D4Mac.zip
 scripts/test.sh           # unit tests
 ```
+
+To publish a release, push a tag: `git tag v0.1.0 && git push origin v0.1.0`.
+GitHub Actions builds the `.dmg` and attaches it to the release.
 
 There is also a command-line tool with the same features:
 
@@ -50,8 +95,8 @@ swift run d4mac stop
 eval "$(swift run d4mac env)"; wine winecfg   # manual Wine commands
 ```
 
-Data lives in `~/Library/Application Support/D4Mac/` (runtime, prefix, logs).
-To remove everything, delete that folder.
+Data lives in `~/Library/Application Support/D4Mac/` (runtime, Windows prefix, logs).
+To remove everything, delete that folder. Set `D4MAC_DATA_ROOT` to use another folder.
 
 ## How it works
 

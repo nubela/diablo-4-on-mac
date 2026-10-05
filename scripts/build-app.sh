@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-version="0.1.0"
+version="${VERSION:-0.1.0}"
 app="dist/D4Mac.app"
 
 swift build -c release --product D4MacApp

@@ -8,8 +8,12 @@ public struct Paths: Sendable {
         self.root = root
     }
 
+    /// `~/Library/Application Support/D4Mac`, or `$D4MAC_DATA_ROOT` (for testing).
     public static var defaultRoot: URL {
-        FileManager.default.homeDirectoryForCurrentUser
+        if let custom = ProcessInfo.processInfo.environment["D4MAC_DATA_ROOT"], !custom.isEmpty {
+            return URL(fileURLWithPath: custom, isDirectory: true)
+        }
+        return FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support/D4Mac", isDirectory: true)
     }
 
@@ -24,6 +28,8 @@ public struct Paths: Sendable {
     /// `../../external/libd3dshared.dylib`.
     public var d3dmetalExternal: URL { wine.appendingPathComponent("lib/external", isDirectory: true) }
     public var libd3dshared: URL { d3dmetalExternal.appendingPathComponent("libd3dshared.dylib") }
+    /// Spare copy of the imported D3DMetal (`external/` + `wine/`), outside the Wine folder.
+    public var d3dmetalBackup: URL { runtime.appendingPathComponent("d3dmetal", isDirectory: true) }
 
     // Windows side
     public var prefix: URL { root.appendingPathComponent("prefix", isDirectory: true) }

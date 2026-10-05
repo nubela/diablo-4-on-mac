@@ -67,5 +67,6 @@ symlinks to `../../external/libd3dshared.dylib`.
   (`11.0`, `11.0_1`) fail to start any child process on macOS 26.5 (the process exits with
   code 1 right after loading `ntdll.dll`), so D4Mac pins Wine 10.
 * The reference launcher carries a small `ntdll` change to `NtQueryDirectoryObject`
-  (BOOLEAN return type). Only needed if Battle.net or the game fails without it; not yet
-  observed.
+  (BOOLEAN return type). Not needed so far: with the stock Wine 10 engine, Battle.net
+  installs, signs in, and starts Diablo IV 3.2.2 to the character select screen
+  (M4 Pro, macOS 26.5.2).

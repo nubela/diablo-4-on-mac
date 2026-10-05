@@ -32,6 +32,7 @@ struct SetupView: View {
                         Task { await model.runSetup() }
                     }
                     .buttonStyle(PrimaryButtonStyle())
+                    .keyboardShortcut(.defaultAction)
                     .disabled(model.isWorking)
                 }
                 Spacer()

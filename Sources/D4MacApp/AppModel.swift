@@ -23,7 +23,7 @@ final class AppModel {
     let paths = Paths()
     let launcher: Launcher
     var states: [String: StepState] = [:]
-    var d3dmetalSource: URL? = D3DMetalImport.findSource()
+    var d3dmetalSource: URL?
     var isWorking = false
     var options = LaunchOptions()
     var isGameRunning = false
@@ -32,6 +32,7 @@ final class AppModel {
 
     init() {
         launcher = Launcher(paths: paths)
+        d3dmetalSource = D3DMetalImport.findSource(paths)
         refresh()
         showSetup = !isReady
         Task { await pollLoop() }

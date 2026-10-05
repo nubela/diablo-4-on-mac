@@ -23,7 +23,7 @@ public struct D3DMetalImport: SetupStep {
     public func run(_ context: SetupContext, progress: @escaping ProgressHandler) async throws {
         let p = context.paths
         guard Files.exists(p.wineBinary) else { throw StepError("Install Wine first.") }
-        guard let source = context.d3dmetalSource ?? Self.findSource() else {
+        guard let source = context.d3dmetalSource ?? Self.findSource(p) else {
             throw StepError("Choose the Game Porting Toolkit .dmg you downloaded from Apple.")
         }
 
@@ -74,13 +74,22 @@ public struct D3DMetalImport: SetupStep {
             }
         }
         guard Files.exists(p.libd3dshared) else { throw StepError("libd3dshared.dylib is missing in \(source.path).") }
+        // Keep our own spare copy, so reinstalling Wine never needs the original source again.
+        if redist.standardizedFileURL != p.d3dmetalBackup.standardizedFileURL {
+            try? Files.fm.removeItem(at: p.d3dmetalBackup)
+            try Files.fm.createDirectory(at: p.d3dmetalBackup.deletingLastPathComponent(),
+                                         withIntermediateDirectories: true)
+            try Files.fm.copyItem(at: redist, to: p.d3dmetalBackup)
+        }
         try Files.writeMarker(p.marker("d3dmetal"), source.path)
         progress(StepProgress("D3DMetal is installed.", fraction: 1))
     }
 
-    /// Best source found on this Mac: a GPTK .dmg in ~/Downloads, else an existing D3DMetal folder.
-    public static func findSource() -> URL? {
-        findImageInDownloads() ?? Paths.existingD3DMetalFolders.first(where: isRedist)
+    /// Best source found on this Mac: D4Mac's own spare copy, else a GPTK .dmg in ~/Downloads,
+    /// else a D3DMetal folder another app put on this Mac.
+    public static func findSource(_ paths: Paths) -> URL? {
+        if isRedist(paths.d3dmetalBackup) { return paths.d3dmetalBackup }
+        return findImageInDownloads() ?? Paths.existingD3DMetalFolders.first(where: isRedist)
     }
 
     /// The newest Game Porting Toolkit .dmg in ~/Downloads, if any.

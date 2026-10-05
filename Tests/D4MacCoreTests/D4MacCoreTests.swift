@@ -30,6 +30,15 @@ final class D4MacCoreTests {
         #expect(!paths.marker("wine").path.hasPrefix(paths.wine.path))
     }
 
+    @Test func findSourcePrefersOwnBackup() throws {
+        let backup = paths.d3dmetalBackup
+        try FileManager.default.createDirectory(at: backup.appendingPathComponent("external"), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: backup.appendingPathComponent("wine"), withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: backup.appendingPathComponent("external/libd3dshared.dylib").path, contents: Data())
+        #expect(D3DMetalImport.findSource(paths) == backup)
+        #expect(!backup.path.hasPrefix(paths.wine.path), "backup must survive a Wine reinstall")
+    }
+
     @Test func d3dmetalSymlinksResolve() {
         // wine/lib/wine/x86_64-unix/d3d12.so -> ../../external/libd3dshared.dylib
         let target = paths.wineLib.appendingPathComponent("x86_64-unix")
