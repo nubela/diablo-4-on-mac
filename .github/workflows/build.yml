@@ -3,18 +3,31 @@ name: Build
 on:
   push:
     branches: [master]
-    tags: ["v*"]
   pull_request:
+  # Publishing a release on GitHub (any tag name) builds it and attaches D4Mac.dmg / .zip.
+  release:
+    types: [published]
+  # Manual run. Fill in a release tag to build that tag and attach the files to its release.
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing release tag to attach D4Mac.dmg/.zip to (leave empty to only build)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
+
+env:
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
 
 jobs:
   build:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG || github.ref }}
 
       - name: Show toolchain
         run: swift --version
@@ -24,7 +37,8 @@ jobs:
 
       - name: Build app
         run: |
-          if [[ "$GITHUB_REF_TYPE" == tag ]]; then export VERSION="${GITHUB_REF_NAME#v}"; fi
+          # Tags like v1.2.3 or 1.2.3 set the app version; other tag names keep the default.
+          if [[ "$RELEASE_TAG" =~ ^v?([0-9]+(\.[0-9]+)*)$ ]]; then export VERSION="${BASH_REMATCH[1]}"; fi
           scripts/build-app.sh
           scripts/make-dmg.sh
 
@@ -36,13 +50,13 @@ jobs:
             dist/D4Mac.dmg
             dist/D4Mac.zip
 
-      # A tag like v0.1.0 publishes a GitHub Release. The README links to
-      # releases/latest/download/D4Mac.dmg, which always points at the newest one.
-      - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/v')
+      # The README links to releases/latest/download/D4Mac.dmg, which always points at
+      # the newest release's file.
+      - name: Attach to release
+        if: env.RELEASE_TAG != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           files: |
             dist/D4Mac.dmg
             dist/D4Mac.zip
-          generate_release_notes: true

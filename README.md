@@ -81,8 +81,11 @@ scripts/make-dmg.sh       # → dist/D4Mac.dmg and dist/D4Mac.zip
 scripts/test.sh           # unit tests
 ```
 
-To publish a release, push a tag: `git tag v0.1.0 && git push origin v0.1.0`.
-GitHub Actions builds the `.dmg` and attaches it to the release.
+To publish a release, create one on GitHub (**Releases → Draft a new release**, any tag
+name, e.g. `v0.2.0`) and click **Publish**. GitHub Actions builds `D4Mac.dmg` and
+`D4Mac.zip` from that tag and attaches them, which makes the download links above work.
+To add the files to a release that already exists, run the **Build** workflow by hand
+(Actions → Build → Run workflow) and enter the release's tag.
 
 There is also a command-line tool with the same features:
 
