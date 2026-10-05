@@ -39,6 +39,25 @@ final class D4MacCoreTests {
         #expect(!backup.path.hasPrefix(paths.wine.path), "backup must survive a Wine reinstall")
     }
 
+    @Test func sessionStateFromProcessList() {
+        // Wine shows its wineserver with an unresolved path.
+        let server = paths.wine.path + "/lib/wine/../../bin/wineserver"
+        let battleNet = #"C:\Program Files (x86)\Battle.net\Battle.net.exe --exec=launch Fen"#
+        let game = #"C:\Program Files (x86)\Diablo IV\Diablo IV.exe -nostreamline -sso -launch -uid fenris"#
+        #expect(Launcher.parseState(processList: "/sbin/launchd\n\(battleNet)", paths: paths) == .stopped)
+        #expect(Launcher.parseState(processList: "\(server)\n\(battleNet)", paths: paths) == .battleNet)
+        #expect(Launcher.parseState(processList: "\(server)\n\(battleNet)\n\(game)", paths: paths) == .game)
+        // Another app's Wine does not count as ours.
+        #expect(Launcher.parseState(processList: "/Applications/Other.app/wine/bin/wineserver\n\(game)", paths: paths) == .stopped)
+    }
+
+    @Test func launchOptionsRoundTrip() throws {
+        let options = LaunchOptions(metalHUD: true, debugLog: false)
+        let decoded = try JSONDecoder().decode(LaunchOptions.self, from: JSONEncoder().encode(options))
+        #expect(decoded == options)
+        #expect(decoded != LaunchOptions())
+    }
+
     @Test func d3dmetalSymlinksResolve() {
         // wine/lib/wine/x86_64-unix/d3d12.so -> ../../external/libd3dshared.dylib
         let target = paths.wineLib.appendingPathComponent("x86_64-unix")

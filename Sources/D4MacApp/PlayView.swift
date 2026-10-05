@@ -16,12 +16,12 @@ struct PlayView: View {
                     .foregroundStyle(LinearGradient(colors: [Theme.gold, Theme.accent],
                                                     startPoint: .top, endPoint: .bottom))
                     .shadow(color: Theme.accent.opacity(0.6), radius: 24)
-                Text(model.isGameRunning ? "Running" : "Ready to play")
+                Text(statusText)
                     .font(.callout.smallCaps()).foregroundStyle(.secondary)
             }
 
             HStack(spacing: 14) {
-                if model.isGameRunning {
+                if model.session == .game {
                     Button("Stop") { Task { await model.stop() } }
                         .buttonStyle(PrimaryButtonStyle())
                 } else {
@@ -30,6 +30,10 @@ struct PlayView: View {
                         .keyboardShortcut(.defaultAction)
                     Button("Open Battle.net") { model.openBattleNet() }
                         .buttonStyle(.bordered)
+                    if model.session == .battleNet {
+                        Button("Stop") { Task { await model.stop() } }
+                            .buttonStyle(.bordered)
+                    }
                 }
             }
             .padding(.top, 28)
@@ -39,7 +43,11 @@ struct PlayView: View {
                 Toggle("Debug log", isOn: $model.options.debugLog)
             }
             .toggleStyle(.checkbox).font(.caption).padding(.top, 18)
-            .disabled(model.isGameRunning)
+            .disabled(model.session == .game)
+            if model.session == .battleNet {
+                Text("Changed settings restart Battle.net when you press Play.")
+                    .font(.caption2).foregroundStyle(.secondary).padding(.top, 6)
+            }
 
             Spacer()
 
@@ -51,6 +59,16 @@ struct PlayView: View {
             .padding(.horizontal, 24).padding(.bottom, 12)
 
             if showLog { LogView(text: model.logText).frame(height: 180) }
+        }
+    }
+}
+
+private extension PlayView {
+    var statusText: String {
+        switch model.session {
+        case .stopped: "Ready to play"
+        case .battleNet: "Battle.net is open"
+        case .game: "Diablo IV is running"
         }
     }
 }

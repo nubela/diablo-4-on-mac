@@ -26,7 +26,7 @@ final class AppModel {
     var d3dmetalSource: URL?
     var isWorking = false
     var options = LaunchOptions()
-    var isGameRunning = false
+    var session: SessionState = .stopped
     var logText = ""
     var showSetup = false
 
@@ -80,24 +80,26 @@ final class AppModel {
     func openBattleNet() { start(playDiablo: false) }
 
     private func start(playDiablo: Bool) {
-        do {
-            try launcher.start(playDiablo: playDiablo, options: options)
-            isGameRunning = true
-        } catch {
-            logText = "Could not start: \(error.localizedDescription)"
+        Task {
+            do {
+                try await launcher.start(playDiablo: playDiablo, options: options)
+                session = await launcher.state()
+            } catch {
+                logText = "Could not start: \(error.localizedDescription)"
+            }
         }
     }
 
     func stop() async {
         await launcher.stop()
-        isGameRunning = false
+        session = .stopped
     }
 
     /// Updates "running" state and the log tail every 2 seconds.
     private func pollLoop() async {
         while true {
             try? await Task.sleep(for: .seconds(2))
-            isGameRunning = await launcher.isRunning()
+            session = await launcher.state()
             if let log = launcher.currentLog, let data = try? Data(contentsOf: log) {
                 logText = String(decoding: data.suffix(16_000), as: UTF8.self)
             }

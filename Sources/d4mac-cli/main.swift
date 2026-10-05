@@ -40,6 +40,7 @@ do {
         for step in Setup.steps {
             print("\(step.isDone(context) ? "✓" : "·") \(step.id.padding(toLength: 10, withPad: " ", startingAt: 0)) \(step.title)")
         }
+        print("running: \(await Launcher(paths: paths).state())")
     case "setup":
         for step in Setup.steps where names.isEmpty ? !step.isDone(context) : names.contains(step.id) {
             print("==> \(step.title)")
@@ -54,7 +55,7 @@ do {
         }
         print(Setup.isReady(context) ? "Setup complete." : "Some steps are still not done; run `d4mac status`.")
     case "battlenet", "play":
-        let log = try Launcher(paths: paths).start(playDiablo: command == "play", options: options)
+        let log = try await Launcher(paths: paths).start(playDiablo: command == "play", options: options)
         print("Started. Log: \(log.path)")
     case "stop":
         await Launcher(paths: paths).stop()

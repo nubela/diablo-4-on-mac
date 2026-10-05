@@ -1,6 +1,6 @@
 import Foundation
 
-public struct LaunchOptions: Sendable, Equatable {
+public struct LaunchOptions: Sendable, Equatable, Codable {
     /// Show Apple's Metal performance HUD (FPS, GPU time) in the game.
     public var metalHUD = false
     /// Write detailed Wine logs (slower; use only for debugging).

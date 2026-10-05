@@ -63,6 +63,8 @@ and starts Diablo IV.
 <img src="docs/screenshots/5-battlenet-play.png" width="250" alt="Diablo IV ready to play in Battle.net">
 
 Tick **Show FPS (Metal HUD)** to see the frame rate in the game.
+The game takes its settings from Battle.net, so if Battle.net is already open with other
+settings, D4Mac restarts it when you press **Play**.
 Click **Stop** to close Battle.net and the game.
 
 ## Already have Diablo IV from GameToMac?
