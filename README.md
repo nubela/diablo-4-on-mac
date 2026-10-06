@@ -73,6 +73,30 @@ D4Mac finds an existing Battle.net install from GameToMac and clones it with APF
 takes about a second and uses no extra disk space, and GameToMac's own files stay unchanged.
 It also re-uses the D3DMetal copy GameToMac downloaded, so you can skip the Apple download.
 
+## Troubleshooting
+
+### Battle.net update stays at 0%
+
+Before it updates a game, Battle.net's background downloader (the "Agent") first updates
+itself. In Wine it often downloads its own files again on each start. If your account uses
+the Asia region, the Agent downloads from `blizzard.gcdn.cloudn.co.kr` first. This server can
+be very slow outside Korea (1–50 KB/s). It does not fail, so the Agent does not change to a
+faster server, and the game update waits behind it.
+
+To fix it, block that server. The Agent then uses the next server (`kr.cdn.blizzard.com`).
+Run this in Terminal (it asks for your password):
+
+```sh
+osascript -e 'do shell script "echo \"0.0.0.0 blizzard.gcdn.cloudn.co.kr\" >> /etc/hosts && dscacheutil -flushcache && killall -HUP mDNSResponder" with administrator privileges'
+```
+
+Then click **Stop** in D4Mac and open Battle.net again. To undo, remove that line from
+`/etc/hosts`.
+
+To check the cause, look at the newest `AgentUpdate-*.log` in
+`~/Library/Application Support/D4Mac/prefix/drive_c/ProgramData/Battle.net/Agent/Agent.*/Logs/`.
+If `agent Update Progress` goes up very slowly, you have this problem.
+
 ## Build from source
 
 Needs Apple's Command Line Tools (`xcode-select --install`). Xcode is not required.
